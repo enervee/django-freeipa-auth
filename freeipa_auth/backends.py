@@ -170,25 +170,23 @@ class FreeIpaRpcAuthBackend(ModelBackend):
             old_perms = user.user_permissions.exclude(codename__in=perm_codenames)  # noqa: E501
             user.user_permissions.remove(*old_perms)
 
-    def get_django_user_groups(self, user_session):
+    def get_django_user_groups(self, groups):
         """
         Parses and returns django specific user groups from freeipa user groups
         :return:
         """
-        groups = self.get_all_user_groups(user_session)
         freeipa_user_groups_prefix = self.settings.REQUIRE_GROUP_PREFIX
         if freeipa_user_groups_prefix:
             return [group.split(freeipa_user_groups_prefix).pop()
                     for group in groups if freeipa_user_groups_prefix in group]
         return groups
 
-    def get_django_user_perms(self, user_session):
+    def get_django_user_perms(self, groups):
         """
         Parses and returns django specific user permissions from
         freeipa user groups.
         :return:
         """
-        groups = self.get_all_user_groups(user_session)
         user_permissions_prefix = self.settings.REQUIRE_PERMISSION_PREFIX
         if user_permissions_prefix:
             return [group.split(user_permissions_prefix).pop()
