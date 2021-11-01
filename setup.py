@@ -20,8 +20,6 @@ setup(
     extras_require={
         'security': ['pyOpenSSL >= 0.14', 'cryptography>=1.3.4', 'idna>=2.0.0'],
     },
-    author='Jerry Aujla',
-    author_email='jerryaujla1@gmail.com',
     url="https://github.com/enervee/django-freeipa-auth",
     classifiers=[
         'Environment :: Web Environment',
