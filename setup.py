@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-freeipa-auth',
-    version='0.1.dev7',
+    version='1.0.0',
     packages=find_packages(),
     include_package_data=True,
     license='BSD License',
@@ -22,6 +22,7 @@ setup(
     },
     author='Jerry Aujla',
     author_email='jerryaujla1@gmail.com',
+    url="https://github.com/enervee/django-freeipa-auth",
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
