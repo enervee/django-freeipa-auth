@@ -79,7 +79,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
     def is_authorized(self, user_session):
         """
         If the AUTHORIZE_ALL_USERS setting is set to False
-        then we check to see if freeipa user has groups0
+        then we check to see if freeipa user has groups
         that are user flags to authorize basic login.
         :param user_session:
         :return:
@@ -87,13 +87,24 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         if not self.settings.AUTHORIZE_ALL_USERS:
             # If not authorize all then we check to see if
             # user has any group flags to authorize
-            groups = self.get_django_user_groups(user_session.groups)
+            groups = self.get_django_user_groups(user_session)
             for group in groups:
                 for flags in self.settings.USER_FLAGS_BY_GROUP.values():
                     if group in flags:
                         return True
             return False
         return True
+
+    def get_all_user_groups(self, user_session):
+        """
+        We want to look for child groups as well to simplify group permission
+        inheritance.
+        :param user_session:
+        :return:
+        """
+        groups = user_session.groups
+        groups += user_session.user_data['memberofindirect_group']
+        return list(set(groups))
 
     def update_user(self, user_session):
         """
@@ -116,8 +127,8 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         self.update_user_attrs(user, user_session.user_data)
 
         # Sync freeipa user groups with current user
-        django_user_groups = self.get_django_user_groups(user_session.groups)
-        django_user_perms = self.get_django_user_perms(user_session.groups)
+        django_user_groups = self.get_django_user_groups(user_session)
+        django_user_perms = self.get_django_user_perms(user_session)
         self.update_user_groups(user, django_user_groups, django_user_perms)
 
         user.save()
