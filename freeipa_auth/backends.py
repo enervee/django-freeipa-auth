@@ -5,12 +5,6 @@ from django.contrib.auth import get_user_model
 import requests
 import logging
 
-logging.basicConfig(filename='logs.txt',
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                            datefmt='%H:%M:%S',
-                            level=logging.DEBUG)
-
 logger = logging.getLogger(__name__)
 
 User = get_user_model()
