@@ -13,7 +13,6 @@ class TestFreeIpaBackendAuth(object):
     def test_login(self, settings, patch_authenticate_success):
         """Test succesful login"""
 
-        settings.override(FREEIPA_AUTH_AUTHORIZE_ALL_USERS=True)
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
         user = User.objects.get(username=self.username)
@@ -25,19 +24,16 @@ class TestFreeIpaBackendAuth(object):
     def test_logout(self, patch_authenticate_success):
         """Test successful logout"""
 
-        settings.override(FREEIPA_AUTH_AUTHORIZE_ALL_USERS=True)
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
         logged_in = self.client.logout()
         assert not logged_in
 
-    def test_update_user_groups(self, test_group, test_permission, settings,
+    def test_update_user_groups(self, test_group, settings,
                                 patch_authenticate_success, patch_remote_user_groups):
         """Test that user groups are update on first time login"""
 
-        settings.override(FREEIPA_AUTH_UPDATE_USER_GROUPS=True,
-                          FREEIPA_AUTH_UPDATE_USER_PERMISSIONS_BY_GROUP=True,
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"]})
+        settings.override(FREEIPA_AUTH_UPDATE_USER_GROUPS=True)
 
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
@@ -51,27 +47,20 @@ class TestFreeIpaBackendAuth(object):
         # flag so user will not be a superuser
         assert not user.is_superuser
 
-        # The user is part of "test_group" and also has
-        # "test_permission" on the freeipa server so they
-        # will updated in django as well
+        # The user is part of "test_group" on the freeipa server so they
+        # will update in django as well
         assert test_group in user.groups.all()
-        assert test_permission in user.user_permissions.all()
 
-    def test_update_user_groups_with_prefix(self, test_group, test_permission, monkeypatch, settings,
+    def test_update_user_groups_with_prefix(self, test_group, monkeypatch, settings,
                                             patch_authenticate_success, patch_remote_user_groups):
         """Test that user groups are mapped with a required group prefix"""
 
-        settings.override(FREEIPA_AUTH_UPDATE_USER_GROUPS=True,
-                          FREEIPA_AUTH_UPDATE_USER_PERMISSIONS_BY_GROUP=True,
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"]},
-                          FREEIPA_AUTH_REQUIRE_GROUP_PREFIX="foo.django.group.",
-                          FREEIPA_AUTH_REQUIRE_PERMISSION_PREFIX="foo.django.permission.")
+        settings.override(FREEIPA_AUTH_UPDATE_USER_GROUPS=True)
 
         # Patch user groups on freeipa to have the required prefix for mapping
         monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession.groups",
-                            [settings.FREEIPA_AUTH_REQUIRE_GROUP_PREFIX + "admin",
-                             settings.FREEIPA_AUTH_REQUIRE_GROUP_PREFIX + "test_group",
-                             settings.FREEIPA_AUTH_REQUIRE_PERMISSION_PREFIX + "test_permission"])
+                            ["foo.django.group.admin",
+                             "foo.django.group.test_group"])
 
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
@@ -81,7 +70,6 @@ class TestFreeIpaBackendAuth(object):
         user = User.objects.get(username=self.username)
         assert user.is_staff
         assert test_group in user.groups.all()
-        assert test_permission in user.user_permissions.all()
 
     def test_update_user_attrs(self, monkeypatch, settings,
                                patch_authenticate_success, patch_remote_user_groups):
@@ -89,26 +77,20 @@ class TestFreeIpaBackendAuth(object):
 
         # Mock user data from freeipa
         monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession._get_user_data",
-                            lambda *args: {"givenname": ['Jerry'], 'mail': ['jerry@django.com']})
+                            lambda *args: {"givenname": ['Chester'], 'sn': ['Tester'], 'mail': ['test@enervee.com']})
 
-        # Set user attrs map and group flags in settings
-        settings.override(FREEIPA_AUTH_USER_ATTRS_MAP={"first_name": "givenname", "email": "mail"},
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"]})
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
 
         # Assert that user attrs are mapped and saved
         user = User.objects.get(username=self.username)
-        assert user.first_name == "Jerry"
-        assert user.email == 'jerry@django.com'
+        assert user.first_name == "Chester"
+        assert user.last_name == "Tester"
+        assert user.email == 'test@enervee.com'
 
     def test_always_update_user(self, settings, monkeypatch,
                                 patch_authenticate_success, patch_remote_user_groups):
         """Test that user is always updated on subsequent logins if set to True in settings"""
-
-        settings.override(FREEIPA_AUTH_ALWAYS_UPDATE_USER=True,
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"],
-                                                            'is_superuser': ['superuser']})
 
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
@@ -130,48 +112,8 @@ class TestFreeIpaBackendAuth(object):
         # User should now be superuser since
         # FREEIPA_AUTH_ALWAYS_UPDATE_USER is set to True in settings
         user = User.objects.get(username=self.username)
-        assert user.is_superuser
-
-    def test_authorize_all_users(self, settings, patch_authenticate_success):
-        """
-        Test that user is authorized to be staff by default
-        if FREEIPA_AUTH_AUTHORIZE_ALL_USERS setting is set to True
-        """
-
-        # No user groups are needed to authorize basic login
-        settings.override(FREEIPA_AUTH_AUTHORIZE_ALL_USERS=True)
-        logged_in = self.client.login(username=self.username, password=self.password)
-        assert logged_in
-
-    def test_not_authorize_all_users(self, settings, patch_authenticate_success):
-        """
-        Test that user is authorized to be staff by default
-        if FREEIPA_AUTH_AUTHORIZE_ALL_USERS setting is set to True
-        """
-
-        settings.override(FREEIPA_AUTH_AUTHORIZE_ALL_USERS=False,
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"],
-                                                            'is_superuser': ['superuser']})
-        logged_in = self.client.login(username=self.username, password=self.password)
-        # User cannot login since they do not have any user group flags on remote server
-        assert not logged_in
-
-    def test_not_authorize_all_users_with_groups(self, settings,
-                                                      patch_authenticate_success, patch_remote_user_groups):
-        """
-        Test that user is authorized to be staff by default
-        if FREEIPA_AUTH_AUTHORIZE_ALL_USERS setting is set to True
-        """
-
-        # No user groups are needed to authorize basic login
-        settings.override(FREEIPA_AUTH_AUTHORIZE_ALL_USERS=False,
-                          FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"],
-                                                            'is_superuser': ['superuser']}
-                          )
-        logged_in = self.client.login(username=self.username, password=self.password)
-        # User can login when AUTHORIZE_ALL_USERS is set to False
-        # and are members of groups that are user flags
-        assert logged_in
+        assert not user.is_superuser
+        assert user.is_staff
 
     def test_no_update_user(self, settings, monkeypatch,
                             patch_authenticate_success, patch_remote_user_groups):
@@ -180,20 +122,23 @@ class TestFreeIpaBackendAuth(object):
         settings.override(FREEIPA_AUTH_ALWAYS_UPDATE_USER=False,
                           FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"],
                                                             'is_superuser': ['superuser']})
+        # Mock user data from freeipa
+        monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession._get_user_data",
+                            lambda *args: {"givenname": ['Chester'], 'sn': ['Tester'], 'mail': ['test@enervee.com']})
 
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
 
         user = User.objects.get(username=self.username)
 
-        # Assert that initially user is not a superuser
-        assert not user.is_superuser
+        # Assert that initially user does not have last name
+        assert not user.last_name
         logged_in = self.client.logout()
         assert not logged_in
 
         # Patch user groups on freeipa to have the superuser flag
         monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession.groups",
-                            ["admin", "test_group", "superuser", "test_permission"])
+                            ["admin", "test_group"])
 
         # Login again
         logged_in = self.client.login(username=self.username, password=self.password)
@@ -201,7 +146,7 @@ class TestFreeIpaBackendAuth(object):
 
         # User should still not be superuser since FREEIPA_AUTH_ALWAYS_UPDATE_USER is set to False
         user = User.objects.get(username=self.username)
-        assert not user.is_superuser
+        assert not user.last_name
 
     def test_invalid_credentials(self, patch_authenticate_fail):
         """Test that no django user is created when login credentials are invalid"""

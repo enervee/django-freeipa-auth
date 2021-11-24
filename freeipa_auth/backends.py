@@ -1,6 +1,6 @@
 from django.contrib.auth.backends import ModelBackend
 from freeipa_auth.freeipa_utils import FreeIpaSession
-from django.contrib.auth.models import Permission, Group
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 import requests
 import logging
@@ -76,25 +76,6 @@ class FreeIpaRpcAuthBackend(ModelBackend):
                 else:
                     raise
 
-    def is_authorized(self, user_session):
-        """
-        If the AUTHORIZE_ALL_USERS setting is set to False
-        then we check to see if freeipa user has groups
-        that are user flags to authorize basic login.
-        :param user_session:
-        :return:
-        """
-        if not self.settings.AUTHORIZE_ALL_USERS:
-            # If not authorize all then we check to see if
-            # user has any group flags to authorize
-            groups = self.get_django_user_groups(user_session)
-            for group in groups:
-                for flags in self.settings.USER_FLAGS_BY_GROUP.values():
-                    if group in flags:
-                        return True
-            return False
-        return True
-
     def get_all_user_groups(self, user_session):
         """
         We want to look for child groups as well to simplify group permission
@@ -127,9 +108,8 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         self.update_user_attrs(user, user_session.user_data)
 
         # Sync freeipa user groups with current user
-        django_user_groups = self.get_django_user_groups(user_session)
-        django_user_perms = self.get_django_user_perms(user_session)
-        self.update_user_groups(user, django_user_groups, django_user_perms)
+        groups = self.get_all_user_groups(user_session)
+        self.update_user_groups(user, groups)
 
         user.save()
         return user
@@ -140,58 +120,18 @@ class FreeIpaRpcAuthBackend(ModelBackend):
             attr_value = user_session_data[key]
             setattr(user, attr, attr_value.pop() if isinstance(attr_value, list) else attr_value)  # noqa: E501
 
-    def update_user_groups(self, user, group_names, perm_codenames):
+    def update_user_groups(self, user, groups):
         """
-        Add user to django groups and give user permissions
-        based on freeipa permissions, also remove user from
-        any groups that do not exist.
-        :param user: Django user obj
-        :param group_names: List of user group names
-        :param perm_codenames: List of user permission codenames
-        :return:
+        Add user to django groups
         """
-
-        # Set flags on user attrs
-        for group, flags in self.settings.USER_FLAGS_BY_GROUP.items():
-            setattr(user, group, any(flag in group_names for flag in flags))
+        # every user should be staff, but none should be superuser
+        setattr(user, "is_staff", True)
 
         # Update user groups
         if self.settings.UPDATE_USER_GROUPS:
-            user.groups.add(*Group.objects.filter(name__in=group_names))
+            user.groups.add(*Group.objects.filter(name__in=groups))
             # Remove now invalid user groups if any
-            user.groups.remove(*user.groups.exclude(name__in=group_names))
-
-        # Update user permissions
-        if self.settings.UPDATE_USER_PERMISSIONS_BY_GROUP:
-            # Allow adding one off permissions to select users.
-            perms = Permission.objects.filter(codename__in=perm_codenames)
-            user.user_permissions.add(*perms)
-            # Remove now invalid user permissions if any
-            old_perms = user.user_permissions.exclude(codename__in=perm_codenames)  # noqa: E501
-            user.user_permissions.remove(*old_perms)
-
-    def get_django_user_groups(self, groups):
-        """
-        Parses and returns django specific user groups from freeipa user groups
-        :return:
-        """
-        freeipa_user_groups_prefix = self.settings.REQUIRE_GROUP_PREFIX
-        if freeipa_user_groups_prefix:
-            return [group.split(freeipa_user_groups_prefix).pop()
-                    for group in groups if freeipa_user_groups_prefix in group]
-        return groups
-
-    def get_django_user_perms(self, groups):
-        """
-        Parses and returns django specific user permissions from
-        freeipa user groups.
-        :return:
-        """
-        user_permissions_prefix = self.settings.REQUIRE_PERMISSION_PREFIX
-        if user_permissions_prefix:
-            return [group.split(user_permissions_prefix).pop()
-                    for group in groups if user_permissions_prefix in group]
-        return groups
+            user.groups.remove(*user.groups.exclude(name__in=groups))
 
 
 class FreeIpaAuthSettings(object):
@@ -202,13 +142,8 @@ class FreeIpaAuthSettings(object):
         'FAILOVER_SERVER': None,
         'SSL_VERIFY': True,
         'UPDATE_USER_GROUPS': False,
-        'UPDATE_USER_PERMISSIONS_BY_GROUP': False,
-        'USER_FLAGS_BY_GROUP': {},
-        'USER_ATTRS_MAP': {},
-        'REQUIRE_GROUP_PREFIX': None,
-        'REQUIRE_PERMISSION_PREFIX': None,
+        'USER_ATTRS_MAP': {'first_name': 'givenname', 'last_name': 'sn', 'email': 'mail'},
         'ALWAYS_UPDATE_USER': True,
-        'AUTHORIZE_ALL_USERS': False,
     }
 
     def __init__(self, prefix='FREEIPA_AUTH_'):
