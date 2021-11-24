@@ -39,8 +39,8 @@ Quick start
     FREEIPA_AUTH_BACKEND_ENABLED = True
     FREEIPA_AUTH_SERVER = "ipa.foo.com" # defaults to None
     FREEIPA_AUTH_FAILOVER_SERVER = "ipa.failover.com" # defaults to None
-    FREEIPA_AUTH_SSL_VERIFY = True
-    FREEIPA_AUTH_UPDATE_USER_GROUPS = True # defaults to None
+    FREEIPA_AUTH_SSL_VERIFY = True # this would be the path to the ssl cert used
+    FREEIPA_AUTH_UPDATE_USER_GROUPS = True # defaults to False
     FREEIPA_AUTH_ALWAYS_UPDATE_USER = True
     FREEIPA_AUTH_USER_ATTRS_MAP = {"first_name": "givenname", "last_name": "sn", "email": "mail"}
 

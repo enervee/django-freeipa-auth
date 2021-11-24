@@ -63,8 +63,6 @@ class FreeIpaRpcAuthBackend(ModelBackend):
                 # If credentials were valid then sync and return the user
                 # Django will handle user sessions from here
                 if logged_in:
-                    if not self.is_authorized(user_session):
-                        return
                     return self.update_user(user_session)
 
             except requests.ConnectionError:
