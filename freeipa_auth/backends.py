@@ -82,7 +82,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         :return:
         """
         groups = user_session.groups
-        groups += user_session.user_data['memberofindirect_group']
+        groups += user_session.user_data.get('memberofindirect_group', [])
         return list(set(groups))
 
     def update_user(self, user_session):
@@ -122,8 +122,17 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         """
         Add user to django groups
         """
-        # every user should be staff, but none should be superuser
-        setattr(user, "is_staff", True)
+
+        if bool(set(groups) & set(self.settings.USER_FLAGS_BY_GROUP["is_staff"])):
+            setattr(user, "is_staff", True)
+        else:
+            setattr(user, "is_staff", False)
+
+        if bool(set(groups) & set(self.settings.USER_FLAGS_BY_GROUP["is_superuser"])):
+            setattr(user, "is_superuser", True)
+        else:
+            setattr(user, "is_superuser", False)
+
 
         # Update user groups
         if self.settings.UPDATE_USER_GROUPS:
@@ -142,6 +151,7 @@ class FreeIpaAuthSettings(object):
         'UPDATE_USER_GROUPS': False,
         'USER_ATTRS_MAP': {'first_name': 'givenname', 'last_name': 'sn', 'email': 'mail'},
         'ALWAYS_UPDATE_USER': True,
+        'USER_FLAGS_BY_GROUP': {'is_staff': ['ipausers'], 'is_superuser': ['superuser']}
     }
 
     def __init__(self, prefix='FREEIPA_AUTH_'):
