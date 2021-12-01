@@ -82,7 +82,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         :return:
         """
         groups = user_session.groups
-        groups += user_session.user_data['memberofindirect_group']
+        groups += user_session.user_data.get('memberofindirect_group', [])
         return list(set(groups))
 
     def update_user(self, user_session):
