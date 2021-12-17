@@ -1,8 +1,7 @@
 [run]
 omit =
-    freeipa_auth/__init__.py
-    freeipa_auth/conftest.py
-    freeipa_auth/tests.py
+    */tests/*
 
 [report]
 show_missing = True
+skip_empty = True
