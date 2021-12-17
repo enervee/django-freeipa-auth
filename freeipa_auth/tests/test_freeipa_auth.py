@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 import pytest
 
 
-class TestFreeIpaBackendAuth(object):
-
+class TestFreeIpaBackendAuth:
     client = Client()
     username = "dummy_freeipa_username"
     password = "dummy_freeipa_password"

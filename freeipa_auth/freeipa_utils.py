@@ -54,10 +54,12 @@ class FreeIpaSession(object):
 
         logger.debug("User is attempting to authenticate via FreeIPA...")
 
-        response = self.session.post(ipa_login_url,
-                                     headers=self.login_headers,
-                                     data=login_data,
-                                     verify=self.ssl_verify)
+        response = self.session.post(
+            ipa_login_url,
+            headers=self.login_headers,
+            data=login_data,
+            verify=self.ssl_verify
+        )
 
         self.user = user
         # If user is authenticated, get user_data from the freeipa server
@@ -96,7 +98,8 @@ class FreeIpaSession(object):
                                           url=ipa_session_url))
 
         request = self.session.post(
-            ipa_session_url, headers=self.session_headers,
+            ipa_session_url,
+            headers=self.session_headers,
             data=json.dumps(self.session_post_data),
             verify=self.ssl_verify
         )
