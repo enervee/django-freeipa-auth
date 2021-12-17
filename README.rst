@@ -46,3 +46,14 @@ Quick start
 
 5. Start the development server and visit http://127.0.0.1:8000/admin/
    to login via freeipa rpc authentication.
+
+Running Tests
+-------------
+
+Tests are run using [`tox`](https://tox.wiki/en/latest/index.html) to test on multiple `python`
+and `Django` versions. To avoid needing to install multiple python binaries, use the
+`docker-compose.test.yml` config to run the test in a Docker container.
+
+````bash
+docker-compose -f docker-compose.test.yml up
+```
