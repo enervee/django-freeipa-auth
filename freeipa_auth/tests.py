@@ -1,5 +1,5 @@
 from django.test import Client
-from django .conf import settings
+from django.conf import settings
 from django.contrib.auth.models import User
 import pytest
 
@@ -17,8 +17,10 @@ class TestFreeIpaBackendAuth(object):
         assert logged_in
         user = User.objects.get(username=self.username)
 
-        # No permissions on basic login
-        assert not user.is_staff
+        # All FreeIPA users should be staff by default
+        assert user.is_staff
+
+        # No FreeIPA users should be superuser by default
         assert not user.is_superuser
 
     def test_logout(self, patch_authenticate_success):
@@ -59,8 +61,7 @@ class TestFreeIpaBackendAuth(object):
 
         # Patch user groups on freeipa to have the required prefix for mapping
         monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession.groups",
-                            ["foo.django.group.admin",
-                             "foo.django.group.test_group"])
+                            ["admin", "test_group"])
 
         logged_in = self.client.login(username=self.username, password=self.password)
         assert logged_in
@@ -122,6 +123,10 @@ class TestFreeIpaBackendAuth(object):
         settings.override(FREEIPA_AUTH_ALWAYS_UPDATE_USER=False,
                           FREEIPA_AUTH_USER_FLAGS_BY_GROUP={"is_staff": ["admin"],
                                                             'is_superuser': ['superuser']})
+
+        # Create a user with the same username in the database
+        User.objects.create(username=self.username, password=self.password)
+
         # Mock user data from freeipa
         monkeypatch.setattr("freeipa_auth.freeipa_utils.FreeIpaSession._get_user_data",
                             lambda *args: {"givenname": ['Chester'], 'sn': ['Tester'], 'mail': ['test@enervee.com']})
