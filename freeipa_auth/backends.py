@@ -82,8 +82,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         :return:
         """
         groups = user_session.groups
-        if user_session.user_data is not None:
-            groups += user_session.user_data.get('memberofindirect_group', [])
+        groups += user_session.user_data.get('memberofindirect_group', [])
         return list(set(groups))
 
     def update_user(self, user_session):
@@ -114,8 +113,6 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         return user
 
     def update_user_attrs(self, user, user_session_data):
-        if user_session_data is None:
-            return
         for attr, key in self.settings.USER_ATTRS_MAP.items():
             attr_value = user_session_data[key]
             if isinstance(attr_value, list):

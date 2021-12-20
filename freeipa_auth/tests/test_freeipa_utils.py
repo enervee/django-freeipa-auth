@@ -78,11 +78,11 @@ class TestFreeIpaSession:
             "data": "unreal data"
         }
 
-    def test_get_user_data_unauthenticated_returns_none(self):
+    def test_get_user_data_unauthenticated_returns_dict(self):
         """
-        Asserts that #_get_user_data returns None if the user
+        Asserts that #_get_user_data returns {} if the user
         is not authenticated.
         """
         session = FreeIpaSession("ipa.foo.com")
         user_data = session._get_user_data()
-        assert user_data is None
+        assert user_data == {}

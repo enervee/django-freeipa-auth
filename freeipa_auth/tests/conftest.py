@@ -61,7 +61,11 @@ def patch_authenticate_success(request, db, monkeypatch):
                         namedtuple("Response", ['status_code'])(200))
     monkeypatch.setattr("freeipa_auth.freeipa_utils."
                         "FreeIpaSession._get_user_data",
-                        lambda *args: None)
+                        lambda *args: {
+                            "givenname": "Test",
+                            "sn": "User",
+                            "mail": "test@enervee.com",
+                        })
 
 
 @pytest.fixture
