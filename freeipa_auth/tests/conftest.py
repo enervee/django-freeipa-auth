@@ -104,12 +104,6 @@ def settings(request, db):
     return django_settings
 
 
-# @pytest.fixture
-# def liveserver_username(request, db):
-#     """Fixture to use a liveserver username"""
-#     return input("username: ")
-
-
 @pytest.fixture
 def liveserver_password(request, db):
     """Fixture to use a liveserver password"""
