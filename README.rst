@@ -50,7 +50,7 @@ Quick start
 Running Tests
 -------------
 
-Tests are run using [`tox`](https://tox.wiki/en/latest/index.html) to test on multiple `python`
+Tests are run using `tox <https://tox.wiki/en/latest/index.html>`_ to test on multiple `python`
 and `Django` versions. To avoid needing to install multiple python binaries, use the
 `docker-compose.test.yml` config to run the test in a Docker container.
 
