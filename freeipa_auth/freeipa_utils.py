@@ -33,7 +33,7 @@ class FreeIpaSession(object):
         self.ssl_verify = ssl_verify
         self.user = None
         self.user_is_authenticated = False
-        self.user_data = None
+        self.user_data = {}
         self.session = requests.Session()
 
     def authenticate(self, user, password):
@@ -54,10 +54,12 @@ class FreeIpaSession(object):
 
         logger.debug("User is attempting to authenticate via FreeIPA...")
 
-        response = self.session.post(ipa_login_url,
-                                     headers=self.login_headers,
-                                     data=login_data,
-                                     verify=self.ssl_verify)
+        response = self.session.post(
+            ipa_login_url,
+            headers=self.login_headers,
+            data=login_data,
+            verify=self.ssl_verify
+        )
 
         self.user = user
         # If user is authenticated, get user_data from the freeipa server
@@ -96,7 +98,8 @@ class FreeIpaSession(object):
                                           url=ipa_session_url))
 
         request = self.session.post(
-            ipa_session_url, headers=self.session_headers,
+            ipa_session_url,
+            headers=self.session_headers,
             data=json.dumps(self.session_post_data),
             verify=self.ssl_verify
         )
@@ -115,6 +118,7 @@ class FreeIpaSession(object):
         if self.user_is_authenticated:
             response = self.make_session_request(self.user_post_data)
             return response['result']['result']
+        return {}
 
     @property
     def groups(self):
@@ -122,4 +126,4 @@ class FreeIpaSession(object):
         Returns all groups of which currently authenticated user is a member
         :return: List of groups
         """
-        return self.user_data['memberof_group'] if self.user_data else []
+        return self.user_data.get('memberof_group', [])

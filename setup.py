@@ -9,14 +9,14 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-freeipa-auth',
-    version='2.0.1',
+    version='2.0.2',
     packages=find_packages(),
     include_package_data=True,
     license='BSD License',
     description='A simple django freeipa rpc authentication backend app with a simple server failover solution.',
     long_description=README,
-    tests_require=['pytest', 'pytest-django>=2.9.1,<=3.1.2', 'requests', 'Django >= 1.8.0'],
-    install_requires=['requests', 'Django >= 1.8.0'],
+    tests_require=['pytest', 'pytest-django>=2.9.1,<=3.1.2', 'requests', 'Django >= 2.2.0'],
+    install_requires=['requests', 'Django >= 2.2.0'],
     extras_require={
         'security': ['pyOpenSSL >= 0.14', 'cryptography>=1.3.4', 'idna>=2.0.0'],
     },
@@ -31,8 +31,8 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],

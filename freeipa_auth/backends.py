@@ -113,10 +113,11 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         return user
 
     def update_user_attrs(self, user, user_session_data):
-
         for attr, key in self.settings.USER_ATTRS_MAP.items():
             attr_value = user_session_data[key]
-            setattr(user, attr, attr_value.pop() if isinstance(attr_value, list) else attr_value)  # noqa: E501
+            if isinstance(attr_value, list):
+                attr_value = attr_value.pop()
+            setattr(user, attr, attr_value)
 
     def update_user_groups(self, user, groups):
         """
@@ -140,7 +141,11 @@ class FreeIpaAuthSettings(object):
         'FAILOVER_SERVER': None,
         'SSL_VERIFY': True,
         'UPDATE_USER_GROUPS': False,
-        'USER_ATTRS_MAP': {'first_name': 'givenname', 'last_name': 'sn', 'email': 'mail'},
+        'USER_ATTRS_MAP': {
+            'first_name': 'givenname',
+            'last_name': 'sn',
+            'email': 'mail'
+        },
         'ALWAYS_UPDATE_USER': True,
     }
 
