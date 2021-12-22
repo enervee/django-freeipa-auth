@@ -2,16 +2,20 @@ name: "Tox Tests"
 
 on:
   push:
-    branches: ['!main']
+    branches-ignore: 
+      - main
 
 jobs:
   test:
-    name: Analyze
+    name: Tox test
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Test
-      run: docker-compose -f docker-compose.test.yml up --build
+    - uses: actions/checkout@v2
+    - name: Run Tox tests
+      id: test
+      uses: fedora-python/tox-github-action@master
+      with:
+        tox_env: ${{ matrix.tox_env }}
+    strategy:
+      matrix:
+        tox_env: [py36, py37, py38, py39]  
