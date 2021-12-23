@@ -44,6 +44,10 @@ Quick start
     FREEIPA_AUTH_ALWAYS_UPDATE_USER = True
     FREEIPA_AUTH_USER_ATTRS_MAP = {"first_name": "givenname", "last_name": "sn", "email": "mail"}
 
+    'STAFF_GROUPS': '__all__' # is_staff set to True for all users
+    'STAFF_GROUPS': [] # is_staff set to False for all users
+    'STAFF_GROUPS': ["group1", "group2"] # is_staff set to True if user is member of at least one group
+
 5. Start the development server and visit http://127.0.0.1:8000/admin/
    to login via freeipa rpc authentication.
 
