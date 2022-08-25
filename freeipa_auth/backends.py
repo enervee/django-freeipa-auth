@@ -70,7 +70,11 @@ class FreeIpaRpcAuthBackend(ModelBackend):
                 # failover server once and return user
                 logger.critical("Main FreeIPA server connection error")
                 if tries == 1 and self.settings.FAILOVER_SERVER:
-                    return self.authenticate(username, password, tries=tries+1)
+                    return self.authenticate(
+                        username=username,
+                        password=password,
+                        tries=tries+1
+                    )
                 else:
                     raise
 
@@ -128,9 +132,9 @@ class FreeIpaRpcAuthBackend(ModelBackend):
 
         # Update user groups
         if self.settings.UPDATE_USER_GROUPS:
+            all_groups = Group.objects.all()
+            user.groups.remove(*all_groups)
             user.groups.add(*Group.objects.filter(name__in=groups))
-            # Remove now invalid user groups if any
-            user.groups.remove(*user.groups.exclude(name__in=groups))
 
 
 class FreeIpaAuthSettings(object):
@@ -159,3 +163,7 @@ class FreeIpaAuthSettings(object):
         for name, default in self.defaults.items():
             value = getattr(settings, prefix + name, default)
             setattr(self, name, value)
+        if getattr(self, 'FAILOVER_SERVER') is None:
+            logger.warning(
+                "FreeIPA Failover Server is not set. Proceed with caution."
+            )

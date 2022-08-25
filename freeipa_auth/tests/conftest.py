@@ -37,6 +37,18 @@ def test_group(request, db):
 
 
 @pytest.fixture
+def test_group2(request, db):
+    """Fixture for a django test group"""
+    group = Group.objects.create(name="test_group2")
+
+    def fin():
+        group.delete()
+    request.addfinalizer(fin)
+
+    return group
+
+
+@pytest.fixture
 def test_permission(request, db):
     """Fixture for a django test permission"""
 
@@ -114,3 +126,22 @@ def liveserver_password(request, db):
 def liveserver(request, db):
     """Fixture to use a liveserver for testing (passed in from command line)"""
     return request.config.getoption('liveserver')
+
+
+@pytest.fixture
+def mock_user_session_data(request, db, test_user, test_group, test_group2):
+    class UserSessionData(object):
+        def __init__(self, **kwargs):
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+
+    return UserSessionData(
+        user=test_user.username,
+        user_data={
+            "givenname": "Chester",
+            "sn": "Tester",
+            "mail": "chester@test.com"
+        },
+        groups=[test_group.name, test_group2.name]
+    )
