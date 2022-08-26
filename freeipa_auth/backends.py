@@ -132,8 +132,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
 
         # Update user groups
         if self.settings.UPDATE_USER_GROUPS:
-            all_groups = Group.objects.all()
-            user.groups.remove(*all_groups)
+            user.groups.clear()
             user.groups.add(*Group.objects.filter(name__in=groups))
 
 
