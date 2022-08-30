@@ -58,7 +58,8 @@ class FreeIpaSession(object):
             ipa_login_url,
             headers=self.login_headers,
             data=login_data,
-            verify=self.ssl_verify
+            verify=self.ssl_verify,
+            timeout=5
         )
 
         self.user = user
@@ -101,7 +102,8 @@ class FreeIpaSession(object):
             ipa_session_url,
             headers=self.session_headers,
             data=json.dumps(self.session_post_data),
-            verify=self.ssl_verify
+            verify=self.ssl_verify,
+            timeout=5
         )
 
         results = request.json()
