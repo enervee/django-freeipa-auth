@@ -112,6 +112,7 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         # Sync freeipa user groups with current user
         groups = self.get_all_user_groups(user_session)
         self.update_user_groups(user, groups)
+        self.set_is_staff(user, groups)
 
         user.save()
         return user
@@ -127,13 +128,18 @@ class FreeIpaRpcAuthBackend(ModelBackend):
         """
         Add user to django groups
         """
-        # every user should be staff, but none should be superuser
-        setattr(user, "is_staff", True)
-
         # Update user groups
         if self.settings.UPDATE_USER_GROUPS:
             user.groups.clear()
             user.groups.add(*Group.objects.filter(name__in=groups))
+
+    def set_is_staff(self, user, groups):
+        setattr(
+            user,
+            "is_staff",
+            self.settings.STAFF_GROUPS == '__all__'
+            or bool(set(groups) & set(self.settings.STAFF_GROUPS))
+        )
 
 
 class FreeIpaAuthSettings(object):
@@ -150,6 +156,7 @@ class FreeIpaAuthSettings(object):
             'email': 'mail'
         },
         'ALWAYS_UPDATE_USER': True,
+        'STAFF_GROUPS': '__all__',
     }
 
     def __init__(self, prefix='FREEIPA_AUTH_'):
