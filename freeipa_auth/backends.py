@@ -48,7 +48,11 @@ class FreeIpaRpcAuthBackend(ModelBackend):
             ssl_verify = self.settings.SSL_VERIFY
 
             # Setup FreeIPA user session
-            user_session = FreeIpaSession(server, ssl_verify=ssl_verify)
+            user_session = FreeIpaSession(
+                server,
+                self.settings.SERVER_TIMEOUT,
+                ssl_verify=ssl_verify
+            )
 
             message = "Attempting to authenticate user on server: {server}"
             logger.info(message.format(server=server))
@@ -150,6 +154,7 @@ class FreeIpaAuthSettings(object):
             'email': 'mail'
         },
         'ALWAYS_UPDATE_USER': True,
+        'SERVER_TIMEOUT': 5,
     }
 
     def __init__(self, prefix='FREEIPA_AUTH_'):
