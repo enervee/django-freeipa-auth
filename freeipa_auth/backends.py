@@ -50,8 +50,8 @@ class FreeIpaRpcAuthBackend(ModelBackend):
             # Setup FreeIPA user session
             user_session = FreeIpaSession(
                 server,
-                self.settings.SERVER_TIMEOUT,
-                ssl_verify=ssl_verify
+                ssl_verify=ssl_verify,
+                server_timeout=self.settings.SERVER_TIMEOUT
             )
 
             message = "Attempting to authenticate user on server: {server}"

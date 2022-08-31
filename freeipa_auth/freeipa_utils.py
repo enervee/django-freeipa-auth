@@ -27,7 +27,7 @@ class FreeIpaSession(object):
     # Base session POST data
     session_post_data = {'id': 0, 'method': '', 'params': []}
 
-    def __init__(self, host_server, server_timeout, ssl_verify=False):
+    def __init__(self, host_server, ssl_verify=False, server_timeout=5):
 
         self.host_server = host_server
         self.ssl_verify = ssl_verify

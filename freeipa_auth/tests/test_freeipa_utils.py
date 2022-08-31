@@ -14,7 +14,7 @@ class TestFreeIpaSession:
         to the session url using the configured host url and the
         given params.
         """
-        session = FreeIpaSession("ipa.foo.com", 5, "/path/to/ssl")
+        session = FreeIpaSession("ipa.foo.com", "/path/to/ssl")
         mock_response = mock.Mock()
         mock_response.json = mock.Mock(return_value={
             "results": "tada"
