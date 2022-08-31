@@ -38,7 +38,8 @@ class TestFreeIpaRpcAuthBackend:
         )
         mock_freeipa.assert_called_once_with(
             "ipa.failover.com",
-            ssl_verify="/path/to/ssl"
+            ssl_verify="/path/to/ssl",
+            server_timeout=5
         )
 
     @override_settings(
@@ -70,10 +71,12 @@ class TestFreeIpaRpcAuthBackend:
             mock.call(
                 "ipa.foo.com",
                 ssl_verify="/path/to/ssl",
+                server_timeout=5,
             ),
             mock.call(
                 "ipa.failover.com",
                 ssl_verify="/path/to/ssl",
+                server_timeout=5,
             ),
         ]
 
