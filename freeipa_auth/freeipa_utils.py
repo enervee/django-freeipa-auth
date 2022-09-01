@@ -60,7 +60,7 @@ class FreeIpaSession(object):
             headers=self.login_headers,
             data=login_data,
             verify=self.ssl_verify,
-            timeout=5
+            timeout=self.server_timeout
         )
 
         self.user = user
