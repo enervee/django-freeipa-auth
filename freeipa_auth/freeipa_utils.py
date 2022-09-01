@@ -27,7 +27,7 @@ class FreeIpaSession(object):
     # Base session POST data
     session_post_data = {'id': 0, 'method': '', 'params': []}
 
-    def __init__(self, host_server, ssl_verify=False):
+    def __init__(self, host_server, ssl_verify=False, server_timeout=5):
 
         self.host_server = host_server
         self.ssl_verify = ssl_verify
@@ -35,6 +35,7 @@ class FreeIpaSession(object):
         self.user_is_authenticated = False
         self.user_data = {}
         self.session = requests.Session()
+        self.server_timeout = server_timeout
 
     def authenticate(self, user, password):
         """
@@ -58,7 +59,8 @@ class FreeIpaSession(object):
             ipa_login_url,
             headers=self.login_headers,
             data=login_data,
-            verify=self.ssl_verify
+            verify=self.ssl_verify,
+            timeout=self.server_timeout
         )
 
         self.user = user
@@ -101,7 +103,8 @@ class FreeIpaSession(object):
             ipa_session_url,
             headers=self.session_headers,
             data=json.dumps(self.session_post_data),
-            verify=self.ssl_verify
+            verify=self.ssl_verify,
+            timeout=5
         )
 
         results = request.json()

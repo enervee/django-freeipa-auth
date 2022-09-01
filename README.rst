@@ -43,6 +43,7 @@ Quick start
     FREEIPA_AUTH_UPDATE_USER_GROUPS = True # defaults to False
     FREEIPA_AUTH_ALWAYS_UPDATE_USER = True
     FREEIPA_AUTH_USER_ATTRS_MAP = {"first_name": "givenname", "last_name": "sn", "email": "mail"}
+    FREEIPA_AUTH_SERVER_TIMEOUT = 5
 
 5. Start the development server and visit http://127.0.0.1:8000/admin/
    to login via freeipa rpc authentication.

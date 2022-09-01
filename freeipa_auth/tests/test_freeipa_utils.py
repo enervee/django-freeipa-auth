@@ -40,7 +40,8 @@ class TestFreeIpaSession:
             expected_url,
             headers=expected_headers,
             data=json.dumps(expected_session_post_data),
-            verify="/path/to/ssl"
+            verify="/path/to/ssl",
+            timeout=5
         )
         assert results == {"results": "tada"}
 
