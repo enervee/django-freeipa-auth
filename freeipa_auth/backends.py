@@ -102,10 +102,9 @@ class FreeIpaRpcAuthBackend(ModelBackend):
 
         user, created = User.objects.get_or_create(username=user_session.user)
 
-        # Set random (secret) pass for freeipa user.
-        # This user does not need to, and cannot, login
-        # via classic django auth.
-        user.set_password(User.objects.make_random_password(length=100))
+        # Mark the user as unable to login via classic django auth.
+        # Authentication is handled entirely by FreeIPA.
+        user.set_unusable_password()
 
         if not created and not self.settings.ALWAYS_UPDATE_USER:
             return user
