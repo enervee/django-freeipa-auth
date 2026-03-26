@@ -104,7 +104,9 @@ class FreeIpaRpcAuthBackend(ModelBackend):
 
         # Mark the user as unable to login via classic django auth.
         # Authentication is handled entirely by FreeIPA.
-        user.set_unusable_password()
+        if user.has_usable_password():
+            user.set_unusable_password()
+            user.save(update_fields=['password'])
 
         if not created and not self.settings.ALWAYS_UPDATE_USER:
             return user
