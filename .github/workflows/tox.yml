@@ -2,20 +2,53 @@ name: "Tox Tests"
 
 on:
   push:
-    branches-ignore: 
+    branches-ignore:
       - main
 
 jobs:
   test:
-    name: Tox test
+    name: "Python ${{ matrix.python-version }} - Django ${{ matrix.django }}"
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Run Tox tests
-      id: test
-      uses: fedora-python/tox-github-action@master
-      with:
-        tox_env: ${{ matrix.tox_env }}
     strategy:
       matrix:
-        tox_env: [py36, py37, py38, py39]  
+        include:
+          - python-version: "3.8"
+            django: "32"
+            tox_env: "py38-django32"
+          - python-version: "3.8"
+            django: "42"
+            tox_env: "py38-django42"
+          - python-version: "3.9"
+            django: "32"
+            tox_env: "py39-django32"
+          - python-version: "3.9"
+            django: "42"
+            tox_env: "py39-django42"
+          - python-version: "3.10"
+            django: "32"
+            tox_env: "py310-django32"
+          - python-version: "3.10"
+            django: "42"
+            tox_env: "py310-django42"
+          - python-version: "3.10"
+            django: "52"
+            tox_env: "py310-django52"
+          - python-version: "3.11"
+            django: "42"
+            tox_env: "py311-django42"
+          - python-version: "3.11"
+            django: "52"
+            tox_env: "py311-django52"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install tox
+      run: pip install tox
+    - name: Run tox
+      run: tox -e ${{ matrix.tox_env }}
+      env:
+        DJANGO_SETTINGS_MODULE: test_settings
+        PYTHONPATH: .
